@@ -5,13 +5,14 @@ using System.Runtime.Serialization;
 using CheesyTot.AspNetCoreIdentity.AzureTables.Helpers;
 using CheesyTot.AzureTables.SimpleIndex.Attributes;
 
-namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
+namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
 {
-    internal class AspNetRoleClaim : ITableEntity
+    [TableName("AspNetRoleClaim")]
+    public class IdentityRoleClaim : ITableEntity
     {
-        public AspNetRoleClaim() { }
+        public IdentityRoleClaim() { }
 
-        public AspNetRoleClaim(string roleId, string claimType, string claimValue)
+        public IdentityRoleClaim(string roleId, string claimType, string claimValue)
         {
             PartitionKey = roleId;
             RowKey = ClaimKeyHelper.ToKey(claimType, claimValue);
@@ -21,7 +22,7 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
 
         [SimpleIndex]
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        
+
         public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 

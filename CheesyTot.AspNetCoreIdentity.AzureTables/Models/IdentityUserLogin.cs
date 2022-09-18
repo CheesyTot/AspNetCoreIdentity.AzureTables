@@ -1,27 +1,27 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using CheesyTot.AspNetCoreIdentity.AzureTables.Helpers;
 using CheesyTot.AzureTables.SimpleIndex.Attributes;
 using System;
 using System.Runtime.Serialization;
 
-namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
+namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
 {
-    internal class AspNetUserClaim : ITableEntity
+    [TableName("AspNetUserLogin")]
+    public class IdentityUserLogin : ITableEntity
     {
-        public AspNetUserClaim() { }
+        public IdentityUserLogin() { }
 
-        public AspNetUserClaim(string userId, string claimType, string claimValue)
+        public IdentityUserLogin(string userId, string loginProvider, string providerKey)
         {
             PartitionKey = userId;
-            RowKey = ClaimKeyHelper.ToKey(claimType, claimValue);
+            RowKey = GetRowKey(loginProvider, providerKey);
         }
 
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         [SimpleIndex]
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        
+
         public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
@@ -29,9 +29,13 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
         public string UserId => PartitionKey;
 
         [IgnoreDataMember]
-        public string ClaimType => ClaimKeyHelper.GetClaimTypeFromKey(RowKey);
+        public string LoginProvider => RowKey.Split(new[] { ":" }, 2, StringSplitOptions.None)[0];
 
         [IgnoreDataMember]
-        public string ClaimValue => ClaimKeyHelper.GetClaimValueFromKey(RowKey);
+        public string ProviderKey => RowKey.Split(new[] { ":" }, 2, StringSplitOptions.None)[1];
+
+        public string ProviderDisplayName { get; set; }
+
+        public static string GetRowKey(string loginProvider, string providerKey) => $"{loginProvider}:{providerKey}";
     }
 }

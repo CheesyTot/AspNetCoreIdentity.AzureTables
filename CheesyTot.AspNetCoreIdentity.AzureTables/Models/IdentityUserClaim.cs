@@ -1,19 +1,21 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using CheesyTot.AspNetCoreIdentity.AzureTables.Helpers;
 using CheesyTot.AzureTables.SimpleIndex.Attributes;
 using System;
 using System.Runtime.Serialization;
 
-namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
+namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
 {
-    internal class AspNetUserRole : ITableEntity
+    [TableName("AspNetUserClaim")]
+    public class IdentityUserClaim : ITableEntity
     {
-        public AspNetUserRole() { }
+        public IdentityUserClaim() { }
 
-        public AspNetUserRole(string userId, string roleId)
+        public IdentityUserClaim(string userId, string claimType, string claimValue)
         {
             PartitionKey = userId;
-            RowKey = RoleId;
+            RowKey = ClaimKeyHelper.ToKey(claimType, claimValue);
         }
 
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -28,6 +30,9 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
         public string UserId => PartitionKey;
 
         [IgnoreDataMember]
-        public string RoleId => RowKey;
+        public string ClaimType => ClaimKeyHelper.GetClaimTypeFromKey(RowKey);
+
+        [IgnoreDataMember]
+        public string ClaimValue => ClaimKeyHelper.GetClaimValueFromKey(RowKey);
     }
 }

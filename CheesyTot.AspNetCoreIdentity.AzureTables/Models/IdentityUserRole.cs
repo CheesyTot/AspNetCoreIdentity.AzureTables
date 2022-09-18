@@ -4,23 +4,24 @@ using CheesyTot.AzureTables.SimpleIndex.Attributes;
 using System;
 using System.Runtime.Serialization;
 
-namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
+namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
 {
-    internal class AspNetUserToken : ITableEntity
+    [TableName("AspNetUserRole")]
+    public class IdentityUserRole : ITableEntity
     {
-        public AspNetUserToken() { }
+        public IdentityUserRole() { }
 
-        public AspNetUserToken(string userId, string loginProvider, string name)
+        public IdentityUserRole(string userId, string roleId)
         {
             PartitionKey = userId;
-            RowKey = GetRowKey(loginProvider, name);
+            RowKey = RoleId;
         }
 
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         [SimpleIndex]
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        
+
         public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
@@ -28,13 +29,6 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
         public string UserId => PartitionKey;
 
         [IgnoreDataMember]
-        public string LoginProvider => RowKey.Split(new[] { "|" }, 2, StringSplitOptions.None)[0];
-
-        [IgnoreDataMember]
-        public string Name => RowKey.Split(new[] { "|" }, 2, StringSplitOptions.None)[1];
-
-        public string Value { get; set; }
-
-        public static string GetRowKey(string loginProvider, string name) => $"{loginProvider}|{name}";
+        public string RoleId => RowKey;
     }
 }

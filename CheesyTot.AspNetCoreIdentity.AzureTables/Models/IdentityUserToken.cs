@@ -1,22 +1,27 @@
 ﻿using Azure;
 using Azure.Data.Tables;
+using CheesyTot.AzureTables.SimpleIndex.Attributes;
 using System;
 using System.Runtime.Serialization;
 
-namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
+namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
 {
-    internal class AspNetUserLogin : ITableEntity
+    [TableName("AspNetUserToken")]
+    public class IdentityUserToken : ITableEntity
     {
-        public AspNetUserLogin() { }
+        public IdentityUserToken() { }
 
-        public AspNetUserLogin(string userId, string loginProvider, string providerKey)
+        public IdentityUserToken(string userId, string loginProvider, string name)
         {
             PartitionKey = userId;
-            RowKey = GetRowKey(loginProvider, providerKey);
+            RowKey = GetRowKey(loginProvider, name);
         }
 
         public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        [SimpleIndex]
         public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
@@ -24,13 +29,13 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Entities
         public string UserId => PartitionKey;
 
         [IgnoreDataMember]
-        public string LoginProvider => RowKey.Split(new[] { ":" }, 2, StringSplitOptions.None)[0];
+        public string LoginProvider => RowKey.Split(new[] { "|" }, 2, StringSplitOptions.None)[0];
 
         [IgnoreDataMember]
-        public string ProviderKey => RowKey.Split(new[] { ":" }, 2, StringSplitOptions.None)[1];
+        public string Name => RowKey.Split(new[] { "|" }, 2, StringSplitOptions.None)[1];
 
-        public string ProviderDisplayName { get; set; }
+        public string Value { get; set; }
 
-        public static string GetRowKey(string loginProvider, string providerKey) => $"{loginProvider}:{providerKey}";
+        public static string GetRowKey(string loginProvider, string name) => $"{loginProvider}|{name}";
     }
 }
