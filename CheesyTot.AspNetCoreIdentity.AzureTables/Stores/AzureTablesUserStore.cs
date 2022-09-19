@@ -1,4 +1,5 @@
-﻿using CheesyTot.AspNetCoreIdentity.AzureTables.Models;
+﻿using CheesyTot.AspNetCoreIdentity.AzureTables.Helpers;
+using CheesyTot.AspNetCoreIdentity.AzureTables.Models;
 using CheesyTot.AzureTables.SimpleIndex.Repositories;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -131,254 +132,736 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Stores
             await _userRoleRepository.AddAsync(userRole);
         }
 
-        public Task<IdentityResult> CreateAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> CreateAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (cancellationToken != null)
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                if (user == null)
+                    throw new ArgumentNullException(nameof(user));
+
+                await _userRepository.AddAsync(user);
+
+                return IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Code = ex.Message, Description = ex.Message });
+            }
         }
 
-        public Task<IdentityResult> DeleteAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> DeleteAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (cancellationToken != null)
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                if (user == null)
+                    throw new ArgumentNullException(nameof(user));
+
+                var entity = await _userRepository.GetAsync(user.Id, user.Id);
+
+                if (entity != null)
+                {
+                    await _userRepository.DeleteAsync(entity);
+                }
+
+                return IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Code = ex.Message, Description = ex.Message });
+            }
         }
 
-        public void Dispose()
+        public void Dispose() { throw new NotImplementedException(); }
+
+        public async Task<Models.IdentityUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(normalizedEmail))
+                throw new ArgumentNullException(nameof(normalizedEmail));
+
+            var userEntity = await _userRepository.GetFirstOrDefaultByIndexedPropertyAsync(nameof(Models.IdentityUser.NormalizedEmail), normalizedEmail);
+
+            return userEntity;
         }
 
-        public Task<Models.IdentityUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        public async Task<Models.IdentityUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new ArgumentNullException(nameof(userId));
+
+            var userEntity = await _userRepository.GetAsync(userId, userId);
+
+            return userEntity;
         }
 
-        public Task<Models.IdentityUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<Models.IdentityUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(loginProvider))
+                throw new ArgumentNullException(nameof(loginProvider));
+
+            if (string.IsNullOrWhiteSpace(providerKey))
+                throw new ArgumentNullException(nameof(providerKey));
+
+            var login = await _userLoginRepository.GetFirstOrDefaultByIndexedPropertyAsync(nameof(IdentityUserLogin.RowKey), IdentityUserLogin.GetRowKey(loginProvider, providerKey));
+
+            if (login == null)
+                return default;
+
+            var entity = await _userRepository.GetAsync(login.UserId, login.UserId);
+
+            return entity;
         }
 
-        public Task<Models.IdentityUser> FindByLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
+        public async Task<Models.IdentityUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-        }
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
 
-        public Task<Models.IdentityUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(normalizedUserName))
+                throw new ArgumentNullException(nameof(normalizedUserName));
+
+            var userEntity = await _userRepository.GetSingleOrDefaultByIndexedPropertyAsync(nameof(Models.IdentityUser.NormalizedUserName), normalizedUserName);
+
+            return userEntity;
         }
 
         public Task<int> GetAccessFailedCountAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.AccessFailedCount);
         }
 
-        public Task<IList<Claim>> GetClaimsAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IList<Claim>> GetClaimsAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return (await _userClaimRepository.GetAsync(user.Id)).Select(x => new Claim(x.ClaimType, x.ClaimValue)).ToList();
         }
 
         public Task<string> GetEmailAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.Email);
         }
 
         public Task<bool> GetEmailConfirmedAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.EmailConfirmed);
         }
 
         public Task<bool> GetLockoutEnabledAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.LockoutEnabled);
         }
 
         public Task<DateTimeOffset?> GetLockoutEndDateAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.LockoutEnd);
         }
 
-        public Task<IList<UserLoginInfo>> GetLoginsAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IList<UserLoginInfo>> GetLoginsAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return (await _userLoginRepository.GetAsync(user.Id))
+                .Select(x => new UserLoginInfo(x.LoginProvider, x.ProviderKey, x.ProviderDisplayName))
+                .ToList();
         }
 
         public Task<string> GetNormalizedEmailAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.NormalizedEmail);
         }
 
         public Task<string> GetNormalizedUserNameAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.NormalizedUserName);
         }
 
         public Task<string> GetPasswordHashAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.PasswordHash);
         }
 
         public Task<string> GetPhoneNumberAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.PhoneNumber);
         }
 
         public Task<bool> GetPhoneNumberConfirmedAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.PhoneNumberConfirmed);
         }
 
-        public Task<IList<string>> GetRolesAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IList<string>> GetRolesAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            var roleIds = (await _userRoleRepository.GetAsync(user.Id)).Select(x => x.RoleId);
+            var roleNames = new List<string>();
+
+            foreach(var roleId in roleIds)
+            {
+                var role = await _roleRepository.GetAsync(roleId, roleId);
+                if (role != null)
+                    roleNames.Add(role.Name);
+            }
+
+            return (roleNames).ToList();
         }
 
         public Task<string> GetSecurityStampAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.SecurityStamp);
         }
 
-        public Task<string> GetTokenAsync(Models.IdentityUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        public async Task<string> GetTokenAsync(Models.IdentityUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (string.IsNullOrWhiteSpace(loginProvider))
+                throw new ArgumentNullException(nameof(loginProvider));
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            var entity = await _userTokenRepository.GetAsync(user.Id, IdentityUserToken.GetRowKey(loginProvider, name));
+
+            return entity?.Value;
         }
 
         public Task<bool> GetTwoFactorEnabledAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.TwoFactorEnabled);
         }
 
         public Task<string> GetUserIdAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.Id);
         }
 
         public Task<string> GetUserNameAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.UserName);
         }
 
-        public Task<IList<Models.IdentityUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+        public async Task<IList<Models.IdentityUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (claim == null)
+                throw new ArgumentNullException(nameof(claim));
+
+            var userIds = (await _userClaimRepository
+                .GetByIndexedPropertyAsync(nameof(Models.IdentityUserClaim.RowKey), ClaimKeyHelper.ToKey(claim.Type, claim.Value)))
+                .Select(x => x.UserId);
+
+            var result = new List<Models.IdentityUser>();
+            foreach(var userId in userIds)
+            {
+                var user = await _userRepository.GetAsync(userId, userId);
+                if (user != null)
+                    result.Add(user);
+            }
+
+            return result;
         }
 
-        public Task<IList<Models.IdentityUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
+        public async Task<IList<Models.IdentityUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (string.IsNullOrWhiteSpace(roleName))
+                throw new ArgumentNullException(nameof(roleName));
+
+            var role = await _roleRepository.GetSingleOrDefaultByIndexedPropertyAsync(nameof(Models.IdentityRole.NormalizedName), roleName);
+            if (role == null)
+                return new List<Models.IdentityUser>();
+
+            var userIds = (await _userRoleRepository.GetByIndexedPropertyAsync(nameof(IdentityUserRole.RowKey), role.Id)).Select(x => x.UserId);
+
+            var result = new List<Models.IdentityUser>();
+            foreach (var userId in userIds)
+            {
+                var user = await _userRepository.GetAsync(userId, userId);
+                if (user != null)
+                    result.Add(user);
+            }
+
+            return result;
         }
 
         public Task<bool> HasPasswordAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(!string.IsNullOrWhiteSpace(user.PasswordHash));
         }
 
         public Task<int> IncrementAccessFailedCountAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(++user.AccessFailedCount);
         }
 
-        public Task<bool> IsInRoleAsync(Models.IdentityUser user, string roleName, CancellationToken cancellationToken)
+        public async Task<bool> IsInRoleAsync(Models.IdentityUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (string.IsNullOrWhiteSpace(roleName))
+                throw new ArgumentNullException(nameof(roleName));
+
+            var role = await _roleRepository.GetSingleOrDefaultByIndexedPropertyAsync(nameof(Models.IdentityRole.NormalizedName), roleName);
+            if (role == null)
+                return false;
+
+            var userRole = await _userRoleRepository.GetAsync(user.Id, role.Id);
+
+            return userRole != null;
         }
 
-        public Task RemoveClaimsAsync(Models.IdentityUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        public async Task RemoveClaimsAsync(Models.IdentityUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (claims == null)
+                throw new ArgumentNullException(nameof(claims));
+
+            if (claims.Any())
+            {
+                var claimEntities = claims.Select(x => new Models.IdentityUserClaim(user.Id, x.Type, x.Value));
+                foreach (var claimEntity in claimEntities)
+                    await _userClaimRepository.DeleteAsync(claimEntity);
+            }
         }
 
-        public Task RemoveFromRoleAsync(Models.IdentityUser user, string roleName, CancellationToken cancellationToken)
+        public async Task RemoveFromRoleAsync(Models.IdentityUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (string.IsNullOrWhiteSpace(roleName))
+                throw new ArgumentNullException(nameof(roleName));
+
+            var role = await _roleRepository.GetSingleOrDefaultByIndexedPropertyAsync(nameof(Models.IdentityRole.NormalizedName), roleName);
+            if (role == null)
+                throw new ArgumentOutOfRangeException(nameof(roleName), "Role does not exist");
+
+            var userRole = new Models.IdentityUserRole(user.Id, role.Id);
+
+            await _userRoleRepository.DeleteAsync(userRole);
         }
 
-        public Task RemoveLoginAsync(Models.IdentityUser user, string loginProvider, string providerKey, CancellationToken cancellationToken)
+        public async Task RemoveLoginAsync(Models.IdentityUser user, string loginProvider, string providerKey, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (string.IsNullOrWhiteSpace(loginProvider))
+                throw new ArgumentNullException(nameof(loginProvider));
+
+            if (string.IsNullOrWhiteSpace(providerKey))
+                throw new ArgumentNullException(nameof(providerKey));
+
+            var loginEntity = new Models.IdentityUserLogin(user.Id, loginProvider, providerKey);
+
+            await _userLoginRepository.DeleteAsync(loginEntity);
         }
 
-        public Task RemoveTokenAsync(Models.IdentityUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        public async Task RemoveTokenAsync(Models.IdentityUser user, string loginProvider, string name, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (string.IsNullOrWhiteSpace(loginProvider))
+                throw new ArgumentNullException(nameof(loginProvider));
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            var entity = await _userTokenRepository.GetAsync(user.Id, Models.IdentityUserToken.GetRowKey(loginProvider, name));
+
+            if (entity != null)
+                await _userTokenRepository.DeleteAsync(entity);
         }
 
-        public Task ReplaceClaimAsync(Models.IdentityUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+        public async Task ReplaceClaimAsync(Models.IdentityUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (claim == null)
+                throw new ArgumentNullException(nameof(claim));
+
+            if (newClaim == null)
+                throw new ArgumentNullException(nameof(newClaim));
+
+            var oldClaimEntity = await _userClaimRepository.GetAsync(user.Id, ClaimKeyHelper.ToKey(claim));
+            var newClaimEntity = new Models.IdentityUserClaim(user.Id, newClaim.Type, newClaim.Value);
+
+            await _userClaimRepository.DeleteAsync(oldClaimEntity);
+            await _userClaimRepository.AddAsync(newClaimEntity);
         }
 
         public Task ResetAccessFailedCountAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.AccessFailedCount = 0;
+
+            return Task.CompletedTask;
         }
 
         public Task SetEmailAsync(Models.IdentityUser user, string email, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.Email = email;
+
+            return Task.CompletedTask;
         }
 
         public Task SetEmailConfirmedAsync(Models.IdentityUser user, bool confirmed, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.EmailConfirmed = confirmed;
+
+            return Task.CompletedTask;
         }
 
         public Task SetLockoutEnabledAsync(Models.IdentityUser user, bool enabled, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.LockoutEnabled = enabled;
+
+            return Task.CompletedTask;
         }
 
         public Task SetLockoutEndDateAsync(Models.IdentityUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.LockoutEnd = lockoutEnd;
+
+            return Task.CompletedTask;
         }
 
         public Task SetNormalizedEmailAsync(Models.IdentityUser user, string normalizedEmail, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.NormalizedEmail = normalizedEmail;
+
+            return Task.CompletedTask;
         }
 
         public Task SetNormalizedUserNameAsync(Models.IdentityUser user, string normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.NormalizedUserName = normalizedName;
+
+            return Task.CompletedTask;
         }
 
         public Task SetPasswordHashAsync(Models.IdentityUser user, string passwordHash, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.PasswordHash = passwordHash;
+
+            return Task.CompletedTask;
         }
 
         public Task SetPhoneNumberAsync(Models.IdentityUser user, string phoneNumber, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.PhoneNumber = phoneNumber;
+
+            return Task.CompletedTask;
         }
 
         public Task SetPhoneNumberConfirmedAsync(Models.IdentityUser user, bool confirmed, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.PhoneNumberConfirmed = confirmed;
+
+            return Task.CompletedTask;
         }
 
         public Task SetSecurityStampAsync(Models.IdentityUser user, string stamp, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.SecurityStamp = stamp;
+
+            return Task.CompletedTask;
         }
 
-        public Task SetTokenAsync(Models.IdentityUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
+        public async Task SetTokenAsync(Models.IdentityUser user, string loginProvider, string name, string value, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            if (string.IsNullOrWhiteSpace(loginProvider))
+                throw new ArgumentNullException(nameof(loginProvider));
+
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            var entity = await _userTokenRepository.GetAsync(user.Id, Models.IdentityUserToken.GetRowKey(loginProvider, name));
+
+            if (entity != null)
+            {
+                entity.Value = value;
+                await _userTokenRepository.UpdateAsync(entity);
+            }
+            else
+            {
+                entity = new Models.IdentityUserToken(user.Id, loginProvider, name) { Value = value };
+                await _userTokenRepository.AddAsync(entity);
+            }
         }
 
         public Task SetTwoFactorEnabledAsync(Models.IdentityUser user, bool enabled, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.TwoFactorEnabled = enabled;
+
+            return Task.CompletedTask;
         }
 
         public Task SetUserNameAsync(Models.IdentityUser user, string userName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.UserName = userName;
+
+            return Task.CompletedTask;
         }
 
-        public Task<IdentityResult> UpdateAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> UpdateAsync(Models.IdentityUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (cancellationToken != null)
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                if (user == null)
+                    throw new ArgumentNullException(nameof(user));
+
+                await _userRepository.UpdateAsync(user);
+
+                return IdentityResult.Success;
+
+            }
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Code = ex.Message, Description = ex.Message });
+            }
         }
     }
 }
