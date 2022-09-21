@@ -10,25 +10,23 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.DI
     {
         public static IdentityBuilder AddAzureTableStorageStores(this IdentityBuilder builder, Action<IdentityAzureTablesOptions> startupAction)
         {
-            var services = builder.Services;
             var options = new IdentityAzureTablesOptions();
             startupAction(options);
 
-            services.Configure<IdentityAzureTablesOptions>(o =>
+            builder.Services.Configure<SimpleIndexRepositoryOptions>(o =>
             {
                 o.TablePrefix = options.TablePrefix;
-                o.ChunkSize = options.ChunkSize;
                 o.IndexTableSuffix = options.IndexTableSuffix;
                 o.StorageConnectionString = options.StorageConnectionString;
             });
 
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityUser>, SimpleIndexRepository<Models.IdentityUser>>();
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityUserClaim>, SimpleIndexRepository<Models.IdentityUserClaim>>();
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityUserLogin>, SimpleIndexRepository<Models.IdentityUserLogin>>();
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityUserRole>, SimpleIndexRepository<Models.IdentityUserRole>>();
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityRole>, SimpleIndexRepository<Models.IdentityRole>>();
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityRoleClaim>, SimpleIndexRepository<Models.IdentityRoleClaim>>();
-            services.AddScoped<ISimpleIndexRepository<Models.IdentityUserToken>, SimpleIndexRepository<Models.IdentityUserToken>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUser>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUser>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserClaim>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserClaim>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserLogin>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserLogin>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserRole>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserRole>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityRole>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityRole>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityRoleClaim>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityRoleClaim>>();
+            builder.Services.AddScoped<ISimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserToken>, SimpleIndexRepository<CheesyTot.AspNetCoreIdentity.AzureTables.Models.IdentityUserToken>>();
 
             builder.AddUserStore<AzureTablesUserStore>();
             builder.AddRoleStore<AzureTablesRoleStore>();

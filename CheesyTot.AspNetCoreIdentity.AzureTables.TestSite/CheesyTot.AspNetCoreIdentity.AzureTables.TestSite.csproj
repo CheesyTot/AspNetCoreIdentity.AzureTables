@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UserSecretsId>aspnet-CheesyTot.AspNetCoreIdentity.AzureTables.TestSite-4B9C6B2A-7C13-43F3-B723-EAAC51F14BD4</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CheesyTot.AspNetCoreIdentity.AzureTables\CheesyTot.AspNetCoreIdentity.AzureTables.csproj" />
+  </ItemGroup>
+
+</Project>

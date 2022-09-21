@@ -26,19 +26,19 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Stores
         IUserLockoutStore<Models.IdentityUser>,
         IQueryableUserStore<Models.IdentityUser>
     {
-        private readonly SimpleIndexRepository<Models.IdentityUser> _userRepository;
-        private readonly SimpleIndexRepository<IdentityUserClaim> _userClaimRepository;
-        private readonly SimpleIndexRepository<IdentityUserLogin> _userLoginRepository;
-        private readonly SimpleIndexRepository<IdentityUserRole> _userRoleRepository;
-        private readonly SimpleIndexRepository<Models.IdentityRole> _roleRepository;
-        private readonly SimpleIndexRepository<IdentityUserToken> _userTokenRepository;
+        private readonly ISimpleIndexRepository<Models.IdentityUser> _userRepository;
+        private readonly ISimpleIndexRepository<Models.IdentityUserClaim> _userClaimRepository;
+        private readonly ISimpleIndexRepository<Models.IdentityUserLogin> _userLoginRepository;
+        private readonly ISimpleIndexRepository<Models.IdentityUserRole> _userRoleRepository;
+        private readonly ISimpleIndexRepository<Models.IdentityRole> _roleRepository;
+        private readonly ISimpleIndexRepository<Models.IdentityUserToken> _userTokenRepository;
 
-        public AzureTablesUserStore(SimpleIndexRepository<Models.IdentityUser> userRepository,
-            SimpleIndexRepository<IdentityUserClaim> userClaimRepository,
-            SimpleIndexRepository<IdentityUserLogin> userLoginRepository,
-            SimpleIndexRepository<IdentityUserRole> userRoleRepository,
-            SimpleIndexRepository<Models.IdentityRole> roleRepository,
-            SimpleIndexRepository<IdentityUserToken> userTokenRepository)
+        public AzureTablesUserStore(ISimpleIndexRepository<Models.IdentityUser> userRepository,
+            ISimpleIndexRepository<Models.IdentityUserClaim> userClaimRepository,
+            ISimpleIndexRepository<Models.IdentityUserLogin> userLoginRepository,
+            ISimpleIndexRepository<Models.IdentityUserRole> userRoleRepository,
+            ISimpleIndexRepository<Models.IdentityRole> roleRepository,
+            ISimpleIndexRepository<Models.IdentityUserToken> userTokenRepository)
         {
             _userRepository = userRepository;
             _userClaimRepository = userClaimRepository;
@@ -177,7 +177,7 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Stores
             }
         }
 
-        public void Dispose() { throw new NotImplementedException(); }
+        public void Dispose() { }
 
         public async Task<Models.IdentityUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {

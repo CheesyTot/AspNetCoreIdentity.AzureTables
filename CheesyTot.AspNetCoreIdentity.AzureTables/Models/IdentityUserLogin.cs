@@ -17,13 +17,13 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
             RowKey = GetRowKey(loginProvider, providerKey);
         }
 
-        public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string PartitionKey { get; set; }
 
         [SimpleIndex]
-        public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string RowKey { get; set; }
 
-        public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
 
         [IgnoreDataMember]
         public string UserId => PartitionKey;

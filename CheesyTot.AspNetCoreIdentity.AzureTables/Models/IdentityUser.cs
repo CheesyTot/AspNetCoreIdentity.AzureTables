@@ -9,9 +9,20 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
     [TableName("AspNetUser")]
     public class IdentityUser : Microsoft.AspNetCore.Identity.IdentityUser<string>, ITableEntity
     {
-        public IdentityUser() : base() { }
-        public IdentityUser(string userName) : base(userName) { }
-        public IdentityUser(string id, string userName) : base(userName)
+        public IdentityUser()
+            : base()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
+        public IdentityUser(string userName)
+            : base(userName)
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
+        public IdentityUser(string id, string userName)
+            : base(userName)
         {
             Id = id;
         }
@@ -20,7 +31,11 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
         public override string Id
         {
             get => PartitionKey;
-            set => RowKey = PartitionKey = value;
+            set
+            {
+                PartitionKey = value;
+                RowKey = value;
+            }
         }
 
         [SimpleIndex]
@@ -29,9 +44,9 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
         [SimpleIndex]
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
 
-        public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

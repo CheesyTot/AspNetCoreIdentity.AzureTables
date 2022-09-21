@@ -9,9 +9,20 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
     [TableName("AspNetRole")]
     public class IdentityRole : Microsoft.AspNetCore.Identity.IdentityRole<string>, ITableEntity
     {
-        public IdentityRole() : base() { }
-        public IdentityRole(string roleName) : base(roleName) { }
-        public IdentityRole(string id, string roleName) : base(roleName)
+        public IdentityRole()
+            : base()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
+        public IdentityRole(string roleName)
+            : base(roleName)
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
+        public IdentityRole(string id, string roleName)
+            : base(roleName)
         {
             Id = id;
         }
@@ -26,9 +37,9 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Models
         [SimpleIndex]
         public override string NormalizedName { get => base.NormalizedName; set => base.NormalizedName = value; }
 
-        public string PartitionKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public string RowKey { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public DateTimeOffset? Timestamp { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public ETag ETag { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+        public DateTimeOffset? Timestamp { get; set; }
+        public ETag ETag { get; set; }
     }
 }

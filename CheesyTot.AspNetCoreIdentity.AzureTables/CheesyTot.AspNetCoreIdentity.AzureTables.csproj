@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CheesyTot.AzureTables.SimpleIndex" Version="0.1.30" />
+    <PackageReference Include="CheesyTot.AzureTables.SimpleIndex" Version="0.1.31" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="6.0.9" />
   </ItemGroup>
