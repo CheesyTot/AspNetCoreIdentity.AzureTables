@@ -1,17 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Authors>Tim Schreiber</Authors>
+		<Company>CheesyTot</Company>
+		<Description>An implementation of ASP.NET Core Identity stores for Azure Table Storage that uses CheesyTot.AzureTables.SimpleIndex</Description>
+		<Copyright>Copyright © 2022 Tim Schreiber, MIT License</Copyright>
+		<PackageProjectUrl>https://github.com/CheesyTot/AspNetCoreIdentity.AzureTables</PackageProjectUrl>
+		<PackageIcon>cheesytot-icon.png</PackageIcon>
+		<RepositoryUrl>https://github.com/CheesyTot/AspNetCoreIdentity.AzureTables</RepositoryUrl>
+		<PackageTags>Azure;Table;Storage;aspnetcore;identity;membership;</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CheesyTot.AzureTables.SimpleIndex" Version="0.1.31" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="6.0.9" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="CheesyTot.AzureTables.SimpleIndex" Version="0.1.31" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="6.0.9" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="../cheesytot-icon.png" Pack="true" PackagePath="\" />
+		<None Include="../README.md" Pack="true" PackagePath="\" />
+		<None Include="../LICENSE" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
