@@ -24,7 +24,8 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Stores
         IUserTwoFactorStore<Models.IdentityUser>,
         IUserPhoneNumberStore<Models.IdentityUser>,
         IUserLockoutStore<Models.IdentityUser>,
-        IQueryableUserStore<Models.IdentityUser>
+        IQueryableUserStore<Models.IdentityUser>,
+        IUserAuthenticatorKeyStore<Models.IdentityUser>
     {
         private readonly ISimpleIndexRepository<Models.IdentityUser> _userRepository;
         private readonly ISimpleIndexRepository<Models.IdentityUserClaim> _userClaimRepository;
@@ -248,6 +249,17 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Stores
                 throw new ArgumentNullException(nameof(user));
 
             return Task.FromResult(user.AccessFailedCount);
+        }
+
+        public Task<string> GetAuthenticatorKeyAsync(Models.IdentityUser user, CancellationToken cancellationToken)
+        {
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            return Task.FromResult(user.AuthenticatorKey);
         }
 
         public async Task<IList<Claim>> GetClaimsAsync(Models.IdentityUser user, CancellationToken cancellationToken)
@@ -655,6 +667,19 @@ namespace CheesyTot.AspNetCoreIdentity.AzureTables.Stores
                 throw new ArgumentNullException(nameof(user));
 
             user.AccessFailedCount = 0;
+
+            return Task.CompletedTask;
+        }
+
+        public Task SetAuthenticatorKeyAsync(Models.IdentityUser user, string key, CancellationToken cancellationToken)
+        {
+            if (cancellationToken != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            user.AuthenticatorKey = key;
 
             return Task.CompletedTask;
         }
